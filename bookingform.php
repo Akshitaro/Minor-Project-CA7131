@@ -1,0 +1,99 @@
+<?php
+
+$servername = "localhost"; 
+$username = "root";        
+$password = "";            
+$dbname = "travelscapes";  
+
+
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+
+$hotelId = 1; 
+$hotelDetails = [];
+
+
+$hotelSql = "SELECT * FROM hotels WHERE hotelid = $hotelId";
+$hotelResult = $conn->query($hotelSql);
+
+if ($hotelResult->num_rows > 0) {
+    $row = $hotelResult->fetch_assoc();
+    $hotelDetails['hotelName'] = $row['hotel'];
+    $hotelDetails['hotelCost'] = $row['cost'];
+    
+}
+
+
+$cityId = 1; 
+$cityName = "";
+
+$citySql = "SELECT city FROM cities WHERE cityid = $cityId";
+$cityResult = $conn->query($citySql);
+
+if ($cityResult->num_rows > 0) {
+    $row = $cityResult->fetch_assoc();
+    $cityName = $row['city'];
+}
+
+
+$initialCost = $hotelDetails['hotelCost'] * 5; 
+
+
+$conn->close();
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/booking.css">
+    <title>Booking Page</title>
+</head>
+<body>
+    <div class="card-container">
+        <div class="booking-details">
+            <h2>Booking Details</h2>
+            <p>City Name: <?php echo $cityName; ?></p>
+            <p>Hotel Name: <?php echo $hotelDetails['hotelName']; ?></p>
+        </div>
+
+        <form method="post" action="payment.php">
+            <h2>Booking Form</h2>
+            <input type="text" name="name" placeholder="Name" required><br>
+            <input type="text" name="username" placeholder="Username" required><br>
+            <input type="number" name="tourists" id="touristsInput" placeholder="Number of Tourists" required><br>
+            <label for="dob">Date of Birth:</label>
+            <input type="date" name="dob" id="dob" required><br>
+            <input type="tel" name="contact" placeholder="Contact Number" required><br>
+
+            <p>Cost: Rs. <span id="calculatedCost"><?php echo $initialCost; ?></span></p>
+
+            <button type="submit" name="proceed" value="Proceed">Proceed for Payment</button>
+        </form>
+    </div>
+
+    <script>
+        
+        const touristsInput = document.getElementById("touristsInput");
+        const calculatedCost = document.getElementById("calculatedCost");
+
+        
+        let initialCost = <?php echo $initialCost; ?>;
+        calculatedCost.textContent = initialCost;
+
+        touristsInput.addEventListener("input", calculateCost);
+
+        function calculateCost() {
+            const tourists = parseInt(touristsInput.value) || 0;
+            const days = <?php echo $journeyDays; ?>; 
+
+            const totalCost = initialCost * tourists * days;
+            calculatedCost.textContent = totalCost;
+        }
+    </script>
+</body>
+</html>
